@@ -29,7 +29,6 @@ import type {
   WorkbookVisualObject,
   WebSearchResult,
   SkillMeta,
-  CreateSkillInput,
 } from '../shared/desktop-api'
 import { IPC_CHANNELS } from '../shared/ipc-channels'
 

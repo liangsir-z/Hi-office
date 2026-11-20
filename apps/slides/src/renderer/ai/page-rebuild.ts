@@ -59,7 +59,9 @@ function str(v: unknown, max = 600): string {
 }
 
 /** Loose validation: never throws — invalid fields fall back, a bad variant is rejected. */
-export function parsePagePlan(raw: unknown): { ok: true; plan: PagePlan } | { ok: false; error: string } {
+export function parsePagePlan(
+  raw: unknown,
+): { ok: true; plan: PagePlan } | { ok: false; error: string } {
   if (!raw || typeof raw !== 'object') return { ok: false, error: 'plan must be an object' }
   const p = raw as Record<string, unknown>
   const variant = String(p.variant ?? '')
@@ -93,7 +95,10 @@ export function parsePagePlan(raw: unknown): { ok: true; plan: PagePlan } | { ok
       .slice(0, 4)
   }
   if (Array.isArray(p.bullets)) {
-    plan.bullets = p.bullets.map((b) => str(b, 240)).filter(Boolean).slice(0, 7)
+    plan.bullets = p.bullets
+      .map((b) => str(b, 240))
+      .filter(Boolean)
+      .slice(0, 7)
   }
   if (Array.isArray(p.items)) {
     plan.items = p.items
@@ -135,10 +140,14 @@ function tint(hex: string, ratio: number): string {
 }
 
 /** Rebuild slide `idx` from `plan` using native add/delete element ops. */
-export async function renderPagePlan(access: DeckAccess, idx: number, plan: PagePlan): Promise<{ ok: boolean; error?: string }> {
+export async function renderPagePlan(
+  access: DeckAccess,
+  idx: number,
+  plan: PagePlan,
+): Promise<{ ok: boolean; error?: string }> {
   const api = window.slidesApi
   // 1. clear the page (keep master decorations)
-  let slide = access.getSlides()[idx]
+  const slide = access.getSlides()[idx]
   if (!slide) return { ok: false, error: `slideIndex ${idx} out of range` }
   const W = slide.widthPx
   const H = slide.heightPx
@@ -148,7 +157,6 @@ export async function renderPagePlan(access: DeckAccess, idx: number, plan: Page
     const updated = await api.deleteElement({ slideIndex: idx, sourceId: n.sourceId })
     if (updated) {
       access.applySlide(idx, updated)
-      slide = updated
     }
   }
 
@@ -207,14 +215,9 @@ export async function renderPagePlan(access: DeckAccess, idx: number, plan: Page
   switch (plan.variant) {
     case 'cover_typography_hero': {
       await add('rect', M, H * 0.4, 110, 10, { fill: plan.accent })
-      await add(
-        'textbox',
-        M,
-        H * 0.45,
-        W - 2 * M,
-        44 * PT_TO_PX * 2,
-        { paragraphs: text([[plan.title, 48, true]], 'left') },
-      )
+      await add('textbox', M, H * 0.45, W - 2 * M, 44 * PT_TO_PX * 2, {
+        paragraphs: text([[plan.title, 48, true]], 'left'),
+      })
       if (plan.subtitle) {
         await add('textbox', M, H * 0.62, W - 2 * M, 30 * PT_TO_PX, {
           paragraphs: text([[plan.subtitle, 20, false]]),
@@ -297,14 +300,9 @@ export async function renderPagePlan(access: DeckAccess, idx: number, plan: Page
         await add('rect', x, cardY, cardW, 6, { fill: plan.accent })
         if (item) {
           const isKpi = plan.variant === 'kpi_cards_row'
-          await add(
-            'textbox',
-            x + 20,
-            cardY + 28,
-            cardW - 40,
-            (isKpi ? 40 : 20) * PT_TO_PX + 8,
-            { paragraphs: text([[item.heading, isKpi ? 34 : 18, true, plan.accent]]) },
-          )
+          await add('textbox', x + 20, cardY + 28, cardW - 40, (isKpi ? 40 : 20) * PT_TO_PX + 8, {
+            paragraphs: text([[item.heading, isKpi ? 34 : 18, true, plan.accent]]),
+          })
           await add('textbox', x + 20, cardY + (isKpi ? 96 : 66), cardW - 40, cardH - 120, {
             paragraphs: text([[item.body, 13, false]]),
           })
@@ -347,7 +345,9 @@ export async function renderPagePlan(access: DeckAccess, idx: number, plan: Page
         await add('rect', x, colY, colW, colH, { fill: i === 0 ? plan.cardColor : plan.background })
         await add('rect', x, colY, colW, 6, { fill: i === 0 ? plan.accent : plan.textColor })
         await add('textbox', x + 22, colY + 26, colW - 44, 22 * PT_TO_PX + 6, {
-          paragraphs: text([[item?.heading ?? '', 19, true, i === 0 ? plan.accent : plan.textColor]]),
+          paragraphs: text([
+            [item?.heading ?? '', 19, true, i === 0 ? plan.accent : plan.textColor],
+          ]),
         })
         await add('textbox', x + 22, colY + 70, colW - 44, colH - 96, {
           paragraphs: text([[item?.body ?? '', 14, false]]),
@@ -363,7 +363,9 @@ export async function renderPagePlan(access: DeckAccess, idx: number, plan: Page
       const bullets = plan.bullets ?? (plan.body ? [plan.body] : [])
       const leftBox: Paragraph[] =
         bullets.length > 0
-          ? bullets.map((b) => ({ runs: [{ text: `•  ${b}`, fontSize: 15, color: plan.textColor }] }))
+          ? bullets.map((b) => ({
+              runs: [{ text: `•  ${b}`, fontSize: 15, color: plan.textColor }],
+            }))
           : []
       if (leftBox.length) {
         await add('textbox', M, H * 0.28, W * 0.46 - M, H * 0.58, { paragraphs: leftBox })
@@ -404,16 +406,37 @@ export async function renderPagePlan(access: DeckAccess, idx: number, plan: Page
         const item = items[i]
         await add('roundRect', M, y, W - 2 * M, rowH, { fill: plan.cardColor })
         await add('roundRect', M + 18, y + (rowH - badge) / 2, badge, badge, { fill: plan.accent })
-        await add('textbox', M + 18, y + (rowH - badge) / 2 + (badge - 26 * PT_TO_PX) / 2, badge, 26 * PT_TO_PX, {
-          paragraphs: text([[String(i + 1), compact ? 16 : 20, true, '#FFFFFF']], 'center'),
-        })
-        await add('textbox', M + 18 + badge + 22, y + (rowH - (compact ? 24 : 44)) / 2, W - 2 * M - badge - 60, (compact ? 24 : 26) * PT_TO_PX, {
-          paragraphs: text([[item?.label ?? '', compact ? 16 : 18, true]]),
-        })
+        await add(
+          'textbox',
+          M + 18,
+          y + (rowH - badge) / 2 + (badge - 26 * PT_TO_PX) / 2,
+          badge,
+          26 * PT_TO_PX,
+          {
+            paragraphs: text([[String(i + 1), compact ? 16 : 20, true, '#FFFFFF']], 'center'),
+          },
+        )
+        await add(
+          'textbox',
+          M + 18 + badge + 22,
+          y + (rowH - (compact ? 24 : 44)) / 2,
+          W - 2 * M - badge - 60,
+          (compact ? 24 : 26) * PT_TO_PX,
+          {
+            paragraphs: text([[item?.label ?? '', compact ? 16 : 18, true]]),
+          },
+        )
         if (item?.sub && !compact) {
-          await add('textbox', M + 18 + badge + 22, y + rowH / 2 + 4, W - 2 * M - badge - 60, 18 * PT_TO_PX, {
-            paragraphs: text([[item.sub, 12, false]]),
-          })
+          await add(
+            'textbox',
+            M + 18 + badge + 22,
+            y + rowH / 2 + 4,
+            W - 2 * M - badge - 60,
+            18 * PT_TO_PX,
+            {
+              paragraphs: text([[item.sub, 12, false]]),
+            },
+          )
         }
       }
       break

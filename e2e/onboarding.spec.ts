@@ -14,7 +14,13 @@ test.describe('first-run onboarding', () => {
       await page.screenshot({ path: screenshotPath('onboarding-slide-1') })
 
       await page.locator('.onb-next').click()
-      await expect(page.locator('.onb-slide.active .onb-offer')).toBeVisible()
+      const secondSlide = page.locator('.onb-slide.active')
+      await expect(secondSlide.locator('.onb-title')).toHaveText('This is just the beginning')
+      await expect(secondSlide.locator('.onb-subtitle')).toContainText(
+        'Hi-office is still in alpha.',
+      )
+      // BYOK builds no longer offer community credits on this slide.
+      await expect(secondSlide.locator('.onb-offer')).toHaveCount(0)
       await page.screenshot({ path: screenshotPath('onboarding-slide-2') })
 
       await page.locator('.onb-next').click()

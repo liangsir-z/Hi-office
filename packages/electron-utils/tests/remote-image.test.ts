@@ -1,6 +1,12 @@
 import { describe, expect, it, vi } from 'vitest'
 import { fetchRemoteImage, remoteImageHeaders } from '../src/remote-image'
 
+// Keep the DNS gate active without relying on the network. Both DNS and
+// the HTTP request are fixtures in this suite.
+vi.mock('node:dns/promises', () => ({
+  lookup: async () => [{ address: '192.0.2.10', family: 4 }],
+}))
+
 const png = () => new Response('img', { status: 200 })
 
 describe('remoteImageHeaders', () => {

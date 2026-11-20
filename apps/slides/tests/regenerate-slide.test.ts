@@ -110,6 +110,7 @@ describe('regenerate_slide', () => {
     const r = await createSlidesSkill(mkAccess([page, page])).executeTool!(
       call('regenerate_slide', { slideIndex: 0, html: 'too short' }),
     )
+    expect(r.isError).toBe(true)
     expect(htmlToNative).not.toHaveBeenCalled()
   })
 

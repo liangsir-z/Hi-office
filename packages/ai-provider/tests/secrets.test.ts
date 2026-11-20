@@ -63,6 +63,7 @@ describe('decodeSettingsSecrets (legacy files)', () => {
   it('passes plaintext keys through unchanged', () => {
     const legacy = { ...sampleSettings() }
     const out = decodeSettingsSecrets(legacy, reverseCodec)
+    expect(out).toEqual(legacy)
   })
 })
 
