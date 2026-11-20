@@ -44,15 +44,16 @@ describe('streamForProvider: empty SSE streams surface as errors', () => {
   // A 200 SSE stream with zero text and zero tool calls previously dissolved
   // into an empty "successful" turn; the UI then showed a generic "no content"
   // message with no diagnostics (alpha rows 36/37)
-  it.each([
-    ['deepseek', 'deepseek-chat', /The model returned no content/],
-  ] as const)('%s: rejects on an empty stream', async (provider, model, message) => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(okResponse(sseStream([]))))
-    const { cb } = collector()
-    await expect(
-      streamForProvider(provider, { apiKey: 'k', model }, 'sys', [], [], 100, cb),
-    ).rejects.toThrow(message)
-  })
+  it.each([['deepseek', 'deepseek-chat', /The model returned no content/]] as const)(
+    '%s: rejects on an empty stream',
+    async (provider, model, message) => {
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue(okResponse(sseStream([]))))
+      const { cb } = collector()
+      await expect(
+        streamForProvider(provider, { apiKey: 'k', model }, 'sys', [], [], 100, cb),
+      ).rejects.toThrow(message)
+    },
+  )
 
   it('a genuine empty closing turn (normal stop framing) still succeeds', async () => {
     // common after tool-heavy runs: the model ends with a stop and no content;
@@ -96,9 +97,107 @@ describe('streamForProvider: empty SSE streams surface as errors', () => {
   })
 })
 
-
-
 describe('streamForProvider: openai-compatible', () => {
+  it('continues a DeepSeek V4 turn after an assistant tool call and tool result', async () => {
+    const tool = {
+      name: 'lookup_cell',
+      description: 'Read a synthetic cell value',
+      inputSchema: { type: 'object', properties: { cell: { type: 'string' } } },
+    }
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        okResponse(
+          sseStream([
+            `data: ${JSON.stringify({
+              choices: [
+                {
+                  delta: {
+                    tool_calls: [
+                      {
+                        index: 0,
+                        id: 'call_a1',
+                        function: { name: 'lookup_cell', arguments: '{"cell":"A1"}' },
+                      },
+                    ],
+                  },
+                },
+              ],
+            })}`,
+            'data: {"choices":[{"delta":{},"finish_reason":"tool_calls"}]}',
+            'data: [DONE]',
+          ]),
+        ),
+      )
+      .mockResolvedValueOnce(
+        okResponse(
+          sseStream([
+            'data: {"choices":[{"delta":{"content":"A1 contains 42."},"finish_reason":"stop"}]}',
+            'data: [DONE]',
+          ]),
+        ),
+      )
+    vi.stubGlobal('fetch', fetchMock)
+    const config = { apiKey: 'fixture-key', model: 'deepseek-chat' }
+    const user = { role: 'user' as const, text: 'What is in A1?' }
+    const first = collector()
+    await streamForProvider(
+      'deepseek',
+      config,
+      'Use worksheet tools.',
+      [user],
+      [tool],
+      200,
+      first.cb,
+    )
+    expect(first.toolCalls).toEqual([{ id: 'call_a1', name: 'lookup_cell', input: { cell: 'A1' } }])
+
+    const second = collector()
+    await streamForProvider(
+      'deepseek',
+      config,
+      'Use worksheet tools.',
+      [
+        user,
+        { role: 'assistant', text: '', toolCalls: first.toolCalls },
+        { role: 'tool', results: [{ id: 'call_a1', name: 'lookup_cell', output: '42' }] },
+      ],
+      [tool],
+      200,
+      second.cb,
+    )
+    expect(second.deltas.join('')).toBe('A1 contains 42.')
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    const requests = fetchMock.mock.calls.map(([url, init]) => {
+      expect(url).toBe('https://api.deepseek.com/v1/chat/completions')
+      expect(new Headers(init?.headers).get('Authorization')).toBe('Bearer fixture-key')
+      const body = JSON.parse(String(init?.body))
+      expect(body).toMatchObject({
+        model: 'deepseek-flash',
+        thinking: { type: 'disabled' },
+        stream: true,
+        tools: [{ type: 'function', function: { name: tool.name, parameters: tool.inputSchema } }],
+      })
+      return body
+    })
+    expect(requests[1].messages).toEqual([
+      { role: 'system', content: 'Use worksheet tools.' },
+      { role: 'user', content: user.text },
+      {
+        role: 'assistant',
+        content: null,
+        tool_calls: [
+          {
+            id: 'call_a1',
+            type: 'function',
+            function: { name: tool.name, arguments: '{"cell":"A1"}' },
+          },
+        ],
+      },
+      { role: 'tool', tool_call_id: 'call_a1', content: '42' },
+    ])
+  })
+
   it('reassembles fragmented tool call arguments and flushes on finish_reason', async () => {
     const body = sseStream([
       'data: {"choices":[{"delta":{"content":"partial "}}]}',
@@ -285,9 +384,7 @@ describe('streamForProvider: openai-compatible', () => {
       expect.anything(),
     )
   })
-
 })
-
 
 describe('streamForProvider: 200 + non-stream JSON instead of SSE', () => {
   const creditsNotice =
@@ -309,7 +406,15 @@ describe('streamForProvider: 200 + non-stream JSON instead of SSE', () => {
       ),
     )
     const { cb } = collector()
-    const run = streamForProvider('deepseek', { apiKey: 'k', model: 'deepseek-chat' }, 'sys', [], [], 100, cb)
+    const run = streamForProvider(
+      'deepseek',
+      { apiKey: 'k', model: 'deepseek-chat' },
+      'sys',
+      [],
+      [],
+      100,
+      cb,
+    )
     await expect(run).rejects.toBeInstanceOf(AiCreditsError)
     await expect(run).rejects.toThrow(/credits have been exhausted/)
   })
@@ -336,13 +441,26 @@ describe('streamForProvider: 200 + non-stream JSON instead of SSE', () => {
       vi.fn().mockResolvedValue(
         json({
           choices: [
-            { message: { role: 'assistant', content: 'The service is under maintenance until 06:00 UTC.' } },
+            {
+              message: {
+                role: 'assistant',
+                content: 'The service is under maintenance until 06:00 UTC.',
+              },
+            },
           ],
         }),
       ),
     )
     const { deltas, cb } = collector()
-    await streamForProvider('deepseek', { apiKey: 'k', model: 'deepseek-chat' }, 'sys', [], [], 100, cb)
+    await streamForProvider(
+      'deepseek',
+      { apiKey: 'k', model: 'deepseek-chat' },
+      'sys',
+      [],
+      [],
+      100,
+      cb,
+    )
     expect(deltas.join('')).toBe('The service is under maintenance until 06:00 UTC.')
   })
 
@@ -358,7 +476,15 @@ describe('streamForProvider: 200 + non-stream JSON instead of SSE', () => {
     )
     const { cb } = collector()
     await expect(
-      streamForProvider('deepseek', { apiKey: 'k', model: 'deepseek-chat' }, 'sys', [], [], 100, cb),
+      streamForProvider(
+        'deepseek',
+        { apiKey: 'k', model: 'deepseek-chat' },
+        'sys',
+        [],
+        [],
+        100,
+        cb,
+      ),
     ).rejects.toThrow(/The model returned an unparseable JSON body: not json at all/)
   })
 
@@ -371,13 +497,18 @@ describe('streamForProvider: 200 + non-stream JSON instead of SSE', () => {
   })
 
   it('a missing Content-Type is still treated as a stream', async () => {
-    const body = sseStream([
-      'data: {"choices":[{"delta":{"content":"ok"}}]}',
-      'data: [DONE]',
-    ])
+    const body = sseStream(['data: {"choices":[{"delta":{"content":"ok"}}]}', 'data: [DONE]'])
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(okResponse(body)))
     const { deltas, cb } = collector()
-    await streamForProvider('deepseek', { apiKey: 'k', model: 'deepseek-chat' }, 'sys', [], [], 100, cb)
+    await streamForProvider(
+      'deepseek',
+      { apiKey: 'k', model: 'deepseek-chat' },
+      'sys',
+      [],
+      [],
+      100,
+      cb,
+    )
     expect(deltas.join('')).toBe('ok')
   })
 })

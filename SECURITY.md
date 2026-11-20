@@ -24,6 +24,10 @@ All application windows run with the full Electron renderer lockdown:
   local settings and encrypted through Electron's `safeStorage` when
   available. If encryption is unavailable, the settings can contain the key
   in plaintext; do not share your local settings files.
+- Manual editing, rendering, and saving work offline. When you use AI,
+  requests to DeepSeek can include your prompt and document content extracted
+  from attachments or returned by editor tools. Avoid sending content you
+  do not want to share with the provider.
 
 ## Threat Model: AI-Generated Layout Scripts (slides)
 

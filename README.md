@@ -68,11 +68,11 @@ AI 美化幻灯片时,模型先产出整页 HTML 设计稿,本地转换器在沙
 
 所有引擎是纯 TypeScript / Rust 包,无 Electron 依赖,可独立测试复用。
 
-### 5. 隐私即架构:数据不出本机,AI 自带钥匙
+### 5. 本地编辑，AI 自带密钥
 
 - 文档的编辑、渲染和保存都在本机完成，支持离线使用。
 - **BYOK(自带密钥)**:在设置里填自己的 DeepSeek API Key,请求由应用**直连**
-  `api.deepseek.com`,没有中间服务器,没有账号系统。
+  `api.deepseek.com`,没有中间服务器,没有账号系统。使用 AI 时，提示词、所附文档中提取的内容和工具返回的文档内容可能随请求发送给 DeepSeek。
 - API Key 保存在本机设置中。系统支持 Electron safeStorage 时会加密；不可用时可能以明文保存，请勿共享本地设置文件。
 - 渲染进程沙箱、IPC 入参校验、外链管控 —— 详见 [SECURITY.md](SECURITY.md)。
 
@@ -181,7 +181,8 @@ Highlights:
   by 3,600+ headless unit tests.
 - **Local document processing.** Editing, rendering, and saving work offline.
   AI requests go directly to the DeepSeek API with your own key. No accounts or
-  relay servers. See [SECURITY.md](SECURITY.md) for local key storage details.
+  relay servers. AI requests can include prompts and document content from
+  attachments or tool results. See [SECURITY.md](SECURITY.md) for details.
 - **Per-app skill system** (Markdown skills, built-in + user-defined,
   hot-reload) and **19 UI languages** with AI replies following the interface
   language.

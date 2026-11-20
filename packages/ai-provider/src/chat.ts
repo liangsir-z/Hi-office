@@ -1,6 +1,6 @@
 import { httpBodyDetail } from './http-error'
 import type { AiChatResponse, AiProviderConfig, AiProviderId } from './types'
-import { PROVIDER_BASE_URLS } from './providers'
+import { normalizeDeepSeekModel, PROVIDER_BASE_URLS } from './providers'
 import { AI_CHAT_RESPONSE_TIMEOUT_MS, createStreamWatchdog, type StreamWatchdog } from './watchdog'
 
 async function chatOpenAiCompatible(
@@ -18,7 +18,8 @@ async function chatOpenAiCompatible(
       Authorization: `Bearer ${config.apiKey}`,
     },
     body: JSON.stringify({
-      model: config.model,
+      model: normalizeDeepSeekModel(config.model),
+      thinking: { type: 'disabled' },
       messages: [
         { role: 'system', content: system },
         { role: 'user', content: user },
