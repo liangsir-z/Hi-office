@@ -2,10 +2,10 @@
 
 ## Reporting a Vulnerability
 
-Please report suspected vulnerabilities privately via GitHub's
-[private vulnerability reporting](https://github.com/liangsir-z/Hi-office/security/advisories/new)
-on this repository. Do not open public issues for security reports. We aim to
-acknowledge reports within 72 hours.
+Do not post vulnerability details in public issues. If the repository's
+[Security page](https://github.com/liangsir-z/Hi-office/security) offers
+**Report a vulnerability**, use it to submit a private report. Otherwise,
+wait for a private reporting channel before sharing technical details.
 
 ## Process Security Posture
 
@@ -19,8 +19,15 @@ All application windows run with the full Electron renderer lockdown:
   (`@genoffice/electron-utils` → `safeExternalUrl`) that parses the URL and
   enforces a protocol allowlist (http/https; pdf link annotations additionally
   allow mailto). `file:`, `javascript:`, and custom schemes are always rejected.
-- No API keys are hardcoded. AI requests are proxied through the signed-in
-  account by default; user-supplied keys stay in the OS-level settings store.
+- The app sends AI requests directly to DeepSeek using the API key you
+  provide. It does not use a Hi-office account or relay. The key is saved in
+  local settings and encrypted through Electron's `safeStorage` when
+  available. If encryption is unavailable, the settings can contain the key
+  in plaintext; do not share your local settings files.
+- Manual editing, rendering, and saving work offline. When you use AI,
+  requests to DeepSeek can include your prompt and document content extracted
+  from attachments or returned by editor tools. Avoid sending content you
+  do not want to share with the provider.
 
 ## Threat Model: AI-Generated Layout Scripts (slides)
 

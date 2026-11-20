@@ -374,7 +374,10 @@ const activeAiStreams = new Map<string, AbortController>()
 export function registerAiIpc(): void {
   ipcMain.handle('ai:get-settings', (): AiSettings => {
     const stored = readJson<Partial<AiSettings> & LegacyAiSettings>(AI_SETTINGS_PATH(), {})
-    const settings = resolveAiSettings(decodeSettingsSecrets(stored, secretCodec), defaultAiSettings())
+    const settings = resolveAiSettings(
+      decodeSettingsSecrets(stored, secretCodec),
+      defaultAiSettings(),
+    )
     // [BYOK] allow user-chosen provider.
     return settings
   })
@@ -493,7 +496,7 @@ export function registerSlidesOnlyAiIpc(): void {
     'ai:generate-image',
     async (
       _event,
-      op: {
+      _op: {
         prompt: string
         model?: string
         referenceImageUrls?: string[]
@@ -552,14 +555,17 @@ export function registerSlidesOnlyAiIpc(): void {
         webPreferences: { sandbox: true, contextIsolation: true, nodeIntegration: false },
       })
       try {
-        await win.loadURL('data:text/html;charset=utf-8;base64,' + Buffer.from(html, 'utf8').toString('base64'))
+        await win.loadURL(
+          'data:text/html;charset=utf-8;base64,' + Buffer.from(html, 'utf8').toString('base64'),
+        )
         await win.webContents.executeJavaScript(
           'Promise.all([document.fonts.ready, ...Array.from(document.images).map((i) => i.decode().catch(() => {}))])',
           true,
         )
-        const parsed = (await win.webContents.executeJavaScript(HTML_DOM_WALKER, true)) as
-          | HtmlWalkResult
-          | null
+        const parsed = (await win.webContents.executeJavaScript(
+          HTML_DOM_WALKER,
+          true,
+        )) as HtmlWalkResult | null
         if (!parsed || !Array.isArray(parsed.elements)) return { error: 'DOM walk failed' }
         if (parsed.elements.length > 220) {
           return {
@@ -567,7 +573,9 @@ export function registerSlidesOnlyAiIpc(): void {
           }
         }
         if (parsed.elements.length > 0 && !parsed.elements.some((el) => el.kind === 'text')) {
-          return { error: 'no text found in the page — text must be real DOM text, not CSS or images' }
+          return {
+            error: 'no text found in the page — text must be real DOM text, not CSS or images',
+          }
         }
 
         const deckW = session.opened.deck.size.cx
@@ -615,7 +623,8 @@ export function registerSlidesOnlyAiIpc(): void {
               : {}),
           })
         }
-        if (parsed.background) await emit('rect', { x: 0, y: 0, w: 1280, h: 720 }, { fill: parsed.background })
+        if (parsed.background)
+          await emit('rect', { x: 0, y: 0, w: 1280, h: 720 }, { fill: parsed.background })
         let imageFailures = 0
         for (const el of parsed.elements) {
           if (el.kind === 'image') {

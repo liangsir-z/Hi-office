@@ -58,22 +58,22 @@ AI 美化幻灯片时,模型先产出整页 HTML 设计稿,本地转换器在沙
 
 ### 4. 自研引擎,不是套壳
 
-| 引擎 | 能力 |
-| --- | --- |
-| `docx-engine` | docx 解析→块树、OOXML 片段生成、字节级段落补丁 |
-| `pptx-engine` / `pptx-render` | pptx 模型与渲染:母版、图表、裁切、墨迹、HarfBuzz 文本整形 |
-| sheets xlsx sidecar | Rust(calamine + IronCalc)导入导出,配合数据透视表、切片器、条件格式、公式追踪 |
-| 图表渲染 | 自研(Konva),不依赖工作表内嵌控件 |
-| PDF | pdf.js + pdf-lib:批注、表单、大纲、图章、签名、页面操作、打印 |
+| 引擎                          | 能力                                                                         |
+| ----------------------------- | ---------------------------------------------------------------------------- |
+| `docx-engine`                 | docx 解析→块树、OOXML 片段生成、字节级段落补丁                               |
+| `pptx-engine` / `pptx-render` | pptx 模型与渲染:母版、图表、裁切、墨迹、HarfBuzz 文本整形                    |
+| sheets xlsx sidecar           | Rust(calamine + IronCalc)导入导出,配合数据透视表、切片器、条件格式、公式追踪 |
+| 图表渲染                      | 自研(Konva),不依赖工作表内嵌控件                                             |
+| PDF                           | pdf.js + pdf-lib:批注、表单、大纲、图章、签名、页面操作、打印                |
 
 所有引擎是纯 TypeScript / Rust 包,无 Electron 依赖,可独立测试复用。
 
-### 5. 隐私即架构:数据不出本机,AI 自带钥匙
+### 5. 本地编辑，AI 自带密钥
 
-- 编辑、渲染、保存**全部本地完成**,离线可用;AI 是唯一的网络出口。
+- 文档的编辑、渲染和保存都在本机完成，支持离线使用。
 - **BYOK(自带密钥)**:在设置里填自己的 DeepSeek API Key,请求由应用**直连**
-  `api.deepseek.com`,没有中间服务器,没有账号系统。
-- API Key 用操作系统钥匙串加密存储(Electron safeStorage),不落明文。
+  `api.deepseek.com`,没有中间服务器,没有账号系统。使用 AI 时，提示词、所附文档中提取的内容和工具返回的文档内容可能随请求发送给 DeepSeek。
+- API Key 保存在本机设置中。系统支持 Electron safeStorage 时会加密；不可用时可能以明文保存，请勿共享本地设置文件。
 - 渲染进程沙箱、IPC 入参校验、外链管控 —— 详见 [SECURITY.md](SECURITY.md)。
 
 ### 6. 技能系统:每个 App 一套,可自己写
@@ -92,13 +92,13 @@ slides 的排版设计体系、docs 的写作技能、sheets 的建模技能…�
 
 ## 应用一览
 
-| 应用 | 格式 | 说明 |
-| --- | --- | --- |
-| **Hi-office Docs** | `.docx` | 字节保真往返的字处理;分页视图复现原文档行布局,支持修订、批注、样式、公式、墨迹 |
+| 应用                 | 格式    | 说明                                                                               |
+| -------------------- | ------- | ---------------------------------------------------------------------------------- |
+| **Hi-office Docs**   | `.docx` | 字节保真往返的字处理;分页视图复现原文档行布局,支持修订、批注、样式、公式、墨迹     |
 | **Hi-office Sheets** | `.xlsx` | 基于 Univer 核心(Apache-2.0)+ 大量自研扩展;Rust 导入导出、自研图表、透视表、切片器 |
-| **Hi-office Slides** | `.pptx` | 自研解析/渲染/编辑引擎 + AI 整页美化管线(见核心优势 3) |
-| **Hi-office PDF** | `.pdf` | 批注、表单、大纲、图章、签名、页面操作、打印 |
-| **Hi-office**(Shell) | — | 套件主界面:主页、四编辑器标签页托管、全局设置、自动更新 |
+| **Hi-office Slides** | `.pptx` | 自研解析/渲染/编辑引擎 + AI 整页美化管线(见核心优势 3)                             |
+| **Hi-office PDF**    | `.pdf`  | 批注、表单、大纲、图章、签名、页面操作、打印                                       |
+| **Hi-office**(Shell) | —       | 套件主界面:主页、四编辑器标签页托管、全局设置、自动更新                            |
 
 ## 从源码构建
 
@@ -148,9 +148,10 @@ Noto CJK 子集)为 OFL / Apache。
 
 ## 许可
 
-Apache-2.0,见 [LICENSE](LICENSE);`ee/` 目录预留给未来企业模块,适用
-[Hi-office Enterprise License](ee/LICENSE)。本项目为独立维护的重命名分支;
-上游 GenOffice/Genspark 名称与标识为 Mainfunc, Inc. 商标,本项目不使用。
+Hi-office 源码采用 Apache-2.0，见 [LICENSE](LICENSE) 和 [NOTICE](NOTICE)。
+第三方组件与字体保留各自的许可。本项目是独立维护的 GenOffice 分支；
+GenOffice 和 Genspark 是 Mainfunc, Inc. 的商标。
+欢迎在本仓库提交 Issue 和 Pull Request，详见 [贡献指南](CONTRIBUTING.md)。
 
 ---
 
@@ -178,9 +179,10 @@ Highlights:
   charts, HarfBuzz shaping), a Rust xlsx sidecar (calamine + IronCalc),
   in-house chart rendering, pdf.js + pdf-lib editing — pure packages, covered
   by 3,600+ headless unit tests.
-- **Private by architecture.** Everything is local except AI calls, which go
-  straight from the app to the DeepSeek API with your own key (encrypted via
-  the OS keychain). No accounts, no relay servers.
+- **Local document processing.** Editing, rendering, and saving work offline.
+  AI requests go directly to the DeepSeek API with your own key. No accounts or
+  relay servers. AI requests can include prompts and document content from
+  attachments or tool results. See [SECURITY.md](SECURITY.md) for details.
 - **Per-app skill system** (Markdown skills, built-in + user-defined,
   hot-reload) and **19 UI languages** with AI replies following the interface
   language.

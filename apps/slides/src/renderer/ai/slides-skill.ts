@@ -650,7 +650,7 @@ const TOOLS: AgentToolDef[] = [
         plan: {
           type: 'object',
           description:
-            'Structured redesign plan. Keep the page\'s real copy verbatim; pick one variant; reuse the deck palette where possible.',
+            "Structured redesign plan. Keep the page's real copy verbatim; pick one variant; reuse the deck palette where possible.",
           properties: {
             variant: {
               type: 'string',
@@ -673,11 +673,15 @@ const TOOLS: AgentToolDef[] = [
             subtitle: { type: 'string', description: 'Optional subtitle/supporting line' },
             accent: { type: 'string', description: '#RRGGBB accent color' },
             background: { type: 'string', description: '#RRGGBB page background' },
-            textColor: { type: 'string', description: '#RRGGBB main text color (contrast with background)' },
+            textColor: {
+              type: 'string',
+              description: '#RRGGBB main text color (contrast with background)',
+            },
             cardColor: { type: 'string', description: '#RRGGBB card/panel fill (optional)' },
             cards: {
               type: 'array',
-              description: 'three_column_cards (3) / two_column_comparison (2): heading + body per column',
+              description:
+                'three_column_cards (3) / two_column_comparison (2): heading + body per column',
               items: {
                 type: 'object',
                 properties: {
@@ -688,7 +692,10 @@ const TOOLS: AgentToolDef[] = [
               },
             },
             number: { type: 'string', description: 'hero_big_number: the key figure (e.g. "87%")' },
-            numberLabel: { type: 'string', description: 'hero_big_number: what the figure measures' },
+            numberLabel: {
+              type: 'string',
+              description: 'hero_big_number: what the figure measures',
+            },
             body: { type: 'string', description: 'hero_big_number: supporting paragraph' },
             bullets: {
               type: 'array',
@@ -704,7 +711,10 @@ const TOOLS: AgentToolDef[] = [
                 required: ['value', 'label'],
               },
             },
-            imageUrl: { type: 'string', description: 'Real http(s) image URL (image_search first)' },
+            imageUrl: {
+              type: 'string',
+              description: 'Real http(s) image URL (image_search first)',
+            },
             items: {
               type: 'array',
               description: 'table_of_contents: numbered entries in order',
@@ -714,7 +724,10 @@ const TOOLS: AgentToolDef[] = [
                 required: ['label'],
               },
             },
-            sectionNumber: { type: 'string', description: 'section_divider: the big section number (e.g. "02")' },
+            sectionNumber: {
+              type: 'string',
+              description: 'section_divider: the big section number (e.g. "02")',
+            },
             footer: { type: 'string', description: 'Optional small footer line' },
           },
           required: ['variant', 'title', 'accent', 'background', 'textColor'],
@@ -1540,14 +1553,6 @@ const fail = (summary: string, output: string) => ({
 // data-dense briefs must declare a dataSource, 'search' is only accepted after a
 // real web_search in this conversation, and 'sample' figures must be disclosed.
 
-/** Specific figures: percentages, money, magnitude units, decimals — not bare years/counts */
-const SPECIFIC_FIGURE_RE =
-  /\d[\d,.]*\s*(?:%|％|亿|萬|万|兆|billion|million|\bbn\b|\bmn\b)|[¥￥$€£]\s*\d|\d+\.\d+/g
-
-function countSpecificFigures(text: string): number {
-  return text.match(SPECIFIC_FIGURE_RE)?.length ?? 0
-}
-
 /**
  * Returns an error message when the declared dataSource does not justify the figures
  * this call carries, null when the call may proceed.
@@ -1603,18 +1608,11 @@ export function auditPageHtml(html: string): string | null {
   return null
 }
 
-/** Append the missing-image report to the tool output: the model learns which pages lack images and how to fix them, instead of silently treating it as success. */
-function imageFailNote(fails?: { page: number; url: string }[]): string {
-  if (!fails?.length) return ''
-  const detail = fails.map((f) => `page ${f.page} (${f.url})`).join(', ')
-  return `\n⚠️ Missing images: ${detail} failed to download/convert; those image slots are blank on the page. Re-run image_search with more generic English keywords, pick a working image, patch it onto the page with insert_web_image (slideIndex = page number - 1), then reply to the user.`
-}
-
 async function executeTool(
   access: DeckAccess,
   call: AgentToolCall,
   state?: SkillState,
-  signal?: AbortSignal,
+  _signal?: AbortSignal,
 ) {
   const slides = access.getSlides()
   switch (call.name) {
@@ -2192,7 +2190,10 @@ async function executeTool(
           access.applySlide(idx, r.slide)
           access.onPagesRebuilt?.([idx])
           if (state) state.htmlGenerated = true // subsequent native fine-tuning is legitimate
-          const imgNote = 'imageFailures' in r && r.imageFailures ? ` (${r.imageFailures} image(s) failed to download)` : ''
+          const imgNote =
+            'imageFailures' in r && r.imageFailures
+              ? ` (${r.imageFailures} image(s) failed to download)`
+              : ''
           return {
             output: `Page ${idx + 1} was rebuilt from your HTML as native elements${imgNote}. Call read_slide to verify, then fine-tune with execute_slide_script if needed.`,
             mutated: true,
@@ -2247,7 +2248,6 @@ async function executeTool(
         'Whole-deck auto-generation is unavailable in this build. Build the deck page by page using add_slide / add_shape / add_table / add_chart / insert_web_image instead.',
       )
     }
-
 
     case 'add_slide': {
       const src = Number(call.input.sourceIndex)

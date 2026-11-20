@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react'
-import type { ReactElement } from 'react'
 import logoLockup from './assets/genoffice-logo.svg'
 import iconDocx from './assets/file-docx.svg'
 import iconXlsx from './assets/file-xlsx.svg'
@@ -384,7 +383,6 @@ function ProjectPanel({ projects, selectedId, onSelect, onRefresh }: ProjectPane
     </div>
   )
 }
-
 
 // ── Main component ──────────────────────────────────────
 
@@ -1334,11 +1332,7 @@ export function Home() {
         {/* [BYOK] Hi-office account login hidden — Hi-office uses user-configured AI providers */}
       </aside>
 
-      {selectedProjectId ? (
-        renderProjectContent()
-      ) : (
-        renderGlobalContent()
-      )}
+      {selectedProjectId ? renderProjectContent() : renderGlobalContent()}
 
       {confirmDelete && (
         <div className="modal-overlay" onClick={() => setConfirmDelete(null)}>

@@ -51,6 +51,7 @@ function assertModuleTreesPresent(platformName) {
     '../slides/out',
     '../pdf/out',
     '../../packages/skills-builtin/skills',
+    '../../packages/skills-builtin/licenses',
     // The sidecar binary ships as an extraResource per platform (win adds
     // .exe) but has no out/ tree — assert it directly, since a missing
     // sidecar would otherwise surface only at runtime in sheets.
@@ -78,6 +79,14 @@ const config = {
   files: ['out/**'],
   extraResources: [
     {
+      from: '../../LICENSE',
+      to: 'LICENSE',
+    },
+    {
+      from: '../../NOTICE',
+      to: 'NOTICE',
+    },
+    {
       from: 'build/THIRD-PARTY-NOTICES.txt',
       to: 'THIRD-PARTY-NOTICES.txt',
     },
@@ -104,6 +113,14 @@ const config = {
     {
       from: '../../packages/skills-builtin/skills',
       to: 'skills-builtin',
+    },
+    {
+      from: '../../packages/skills-builtin/NOTICE.md',
+      to: 'skills-builtin-notices/NOTICE.md',
+    },
+    {
+      from: '../../packages/skills-builtin/licenses',
+      to: 'skills-builtin-notices/licenses',
     },
   ],
   // `mimeType` is read only by the Linux target, where it becomes the

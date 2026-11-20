@@ -1,7 +1,7 @@
 import type { AgentMessage, AgentToolCall, AgentToolDef } from '@genoffice/agent-core'
 import { httpBodyDetail } from './http-error'
 import type { AiProviderConfig, AiProviderId } from './types'
-import { providerSupportsVision, PROVIDER_BASE_URLS } from './providers'
+import { normalizeDeepSeekModel, providerSupportsVision, PROVIDER_BASE_URLS } from './providers'
 import { createStreamWatchdog, type StreamWatchdog } from './watchdog'
 
 // ---- streaming (SSE line splitting shared by all providers) ----
@@ -159,7 +159,11 @@ function parseToolInput(json: string): { input: Record<string, unknown>; error?:
 
 // ---- OpenAI-compatible (every fixed provider + custom) ----
 
-function openAiMessages(system: string, messages: AgentMessage[], includeImages: boolean): unknown[] {
+function openAiMessages(
+  system: string,
+  messages: AgentMessage[],
+  includeImages: boolean,
+): unknown[] {
   const out: unknown[] = [{ role: 'system', content: system }]
   for (const m of messages) {
     if (m.role === 'user') {
@@ -257,10 +261,22 @@ export async function streamOpenAiCompatible(
   maxTokens: number,
   cb: StreamCallbacks,
   includeImages = true,
+  deepSeek = false,
 ): Promise<void> {
   const wd = createStreamWatchdog(cb.signal)
   return wd.guard(() =>
-    openAiCompatibleTurn(baseUrl, config, system, messages, tools, maxTokens, cb, wd, includeImages),
+    openAiCompatibleTurn(
+      baseUrl,
+      config,
+      system,
+      messages,
+      tools,
+      maxTokens,
+      cb,
+      wd,
+      includeImages,
+      deepSeek,
+    ),
   )
 }
 
@@ -274,6 +290,7 @@ async function openAiCompatibleTurn(
   cb: StreamCallbacks,
   wd: StreamWatchdog,
   includeImages: boolean,
+  deepSeek: boolean,
 ): Promise<void> {
   const onBytes = () => {
     wd.touch()
@@ -287,7 +304,10 @@ async function openAiCompatibleTurn(
       Authorization: `Bearer ${config.apiKey}`,
     },
     body: JSON.stringify({
-      model: config.model,
+      model: deepSeek ? normalizeDeepSeekModel(config.model) : config.model,
+      // DeepSeek enables thinking by default. Tool history here replays only
+      // visible content and calls, not the reasoning_content thinking requires.
+      ...(deepSeek ? { thinking: { type: 'disabled' } } : {}),
       max_tokens: maxTokens,
       messages: openAiMessages(system, messages, includeImages),
       ...(tools.length > 0
@@ -416,7 +436,7 @@ export async function streamForProvider(
     tools,
     maxTokens,
     cb,
-    // deepseek-chat/reasoner reject image_url parts with 400
     providerSupportsVision(provider, config.model),
+    provider === 'deepseek',
   )
 }

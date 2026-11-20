@@ -6,19 +6,10 @@ repository.
 
 ## How changes land here
 
-This GitHub repository is a mirror: development happens in a private tree,
-and `main` here advances through single squashed snapshot commits
-(`Sync snapshot (<date>)`). That is why every file in a sync shows the same
-last-commit message, and why nobody — maintainers included — pushes to
-`main` directly.
-
-External pull requests are welcome and are reviewed here. Once a change is
-accepted, a maintainer imports it into the private tree with your authorship
-preserved as a `Co-authored-by:` trailer, and it ships to `main` in the next
-snapshot; your PR is then closed with a note pointing at the snapshot that
-carried it. GitHub will show the PR as "closed" rather than "merged" — the
-code and the attribution still land. Issues and feature requests are handled
-directly on this repository as usual.
+This is the public source repository for Hi-office. Open issues for bug
+reports or feature requests, and submit changes as pull requests against
+`main`. Maintainers review pull requests here and merge them after the
+required checks pass.
 
 ## Repository layout
 
@@ -32,7 +23,7 @@ directly on this repository as usual.
 
 ## Getting started
 
-Prerequisites: Node 20+, npm 10+, and a Rust toolchain (`cargo` on PATH,
+Prerequisites: Node 22.12+, npm 10+, and a Rust toolchain (`cargo` on PATH,
 needed only for the sheets xlsx sidecar).
 
 ```bash
@@ -106,8 +97,8 @@ testing and local overrides:
 | `XLSX_SIDECAR_PATH`, `XLSX_OPEN_PATH`, `XLSX_DEBUG_PORT` | Point at a locally built xlsx sidecar and its debug port               |
 | `*_DEV_PORT`, `*_RENDERER_URL`                           | Per-app Vite dev server ports and renderer URLs (set by `npm run dev`) |
 
-AI features degrade rather than break without credentials: requests surface an
-inline sign-in prompt, and web search falls back to a keyless backend.
+No account is required. Document editing works without credentials. To use
+AI features, enter your DeepSeek API key in the app’s settings.
 
 ## Coding conventions
 
@@ -155,8 +146,3 @@ one. By contributing, you agree that your contributions are licensed under
 the [Apache License 2.0](LICENSE) that covers this project — inbound =
 outbound, per Apache-2.0 §5. Because community contributions keep their
 Apache-2.0 terms, the open-source core cannot be retroactively relicensed.
-
-The `ee/` directory is reserved for future enterprise modules under a
-[separate license](ee/LICENSE) and does not accept external contributions —
-pull requests from outside the maintainer team must not modify files under
-`ee/` (enforced via [CODEOWNERS](.github/CODEOWNERS)).

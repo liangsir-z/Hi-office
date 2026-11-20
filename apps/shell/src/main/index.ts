@@ -16,7 +16,6 @@ import {
   dialog,
   ipcMain,
   nativeImage,
-  session,
   shell,
   webContents,
 } from 'electron'
@@ -277,7 +276,8 @@ const tMain = createI18n({
     menuSaveAs: 'Save As…',
     menuClose: 'Close',
     tabCrashTitle: 'Tab crashed',
-    tabCrashMsg: 'The page process for "{title}" exited unexpectedly ({reason}). You can try reloading it, or close the tab.',
+    tabCrashMsg:
+      'The page process for "{title}" exited unexpectedly ({reason}). You can try reloading it, or close the tab.',
     tabCrashReload: 'Reload',
     menuEdit: 'Edit',
     menuWindow: 'Window',
@@ -314,7 +314,8 @@ const tMain = createI18n({
     menuSaveAs: '名前を付けて保存…',
     menuClose: '閉じる',
     tabCrashTitle: 'タブがクラッシュしました',
-    tabCrashMsg: '「{title}」のページプロセスが予期せず終了しました（{reason}）。再読み込みするか、タブを閉じることができます。',
+    tabCrashMsg:
+      '「{title}」のページプロセスが予期せず終了しました（{reason}）。再読み込みするか、タブを閉じることができます。',
     tabCrashReload: '再読み込み',
     menuEdit: '編集',
     menuWindow: 'ウィンドウ',
@@ -351,7 +352,8 @@ const tMain = createI18n({
     menuSaveAs: '다른 이름으로 저장…',
     menuClose: '닫기',
     tabCrashTitle: '탭이 중단되었습니다',
-    tabCrashMsg: '"{title}" 페이지 프로세스가 예기치 않게 종료되었습니다({reason}). 다시 로드하거나 탭을 닫을 수 있습니다.',
+    tabCrashMsg:
+      '"{title}" 페이지 프로세스가 예기치 않게 종료되었습니다({reason}). 다시 로드하거나 탭을 닫을 수 있습니다.',
     tabCrashReload: '다시 로드',
     menuEdit: '편집',
     menuWindow: '창',
@@ -388,7 +390,8 @@ const tMain = createI18n({
     menuSaveAs: 'Enregistrer sous…',
     menuClose: 'Fermer',
     tabCrashTitle: 'Onglet planté',
-    tabCrashMsg: 'Le processus de la page « {title} » s\'est arrêté de manière inattendue ({reason}). Vous pouvez essayer de recharger l\'onglet ou le fermer.',
+    tabCrashMsg:
+      "Le processus de la page « {title} » s'est arrêté de manière inattendue ({reason}). Vous pouvez essayer de recharger l'onglet ou le fermer.",
     tabCrashReload: 'Recharger',
     menuEdit: 'Édition',
     menuWindow: 'Fenêtre',
@@ -425,7 +428,8 @@ const tMain = createI18n({
     menuSaveAs: 'Speichern unter…',
     menuClose: 'Schließen',
     tabCrashTitle: 'Tab abgestürzt',
-    tabCrashMsg: 'Der Seitenprozess von „{title}“ wurde unerwartet beendet ({reason}). Sie können den Tab neu laden oder schließen.',
+    tabCrashMsg:
+      'Der Seitenprozess von „{title}“ wurde unerwartet beendet ({reason}). Sie können den Tab neu laden oder schließen.',
     tabCrashReload: 'Neu laden',
     menuEdit: 'Bearbeiten',
     menuWindow: 'Fenster',
@@ -462,7 +466,8 @@ const tMain = createI18n({
     menuSaveAs: 'Guardar como…',
     menuClose: 'Cerrar',
     tabCrashTitle: 'Pestaña bloqueada',
-    tabCrashMsg: 'El proceso de la página "{title}" se cerró inesperadamente ({reason}). Puede intentar recargarla o cerrar la pestaña.',
+    tabCrashMsg:
+      'El proceso de la página "{title}" se cerró inesperadamente ({reason}). Puede intentar recargarla o cerrar la pestaña.',
     tabCrashReload: 'Recargar',
     menuEdit: 'Edición',
     menuWindow: 'Ventana',
@@ -499,7 +504,8 @@ const tMain = createI18n({
     menuSaveAs: 'บันทึกเป็น…',
     menuClose: 'ปิด',
     tabCrashTitle: 'แท็บขัดข้อง',
-    tabCrashMsg: 'กระบวนการของหน้า "{title}" สิ้นสุดโดยไม่คาดคิด ({reason}) คุณสามารถลองโหลดใหม่หรือปิดแท็บได้',
+    tabCrashMsg:
+      'กระบวนการของหน้า "{title}" สิ้นสุดโดยไม่คาดคิด ({reason}) คุณสามารถลองโหลดใหม่หรือปิดแท็บได้',
     tabCrashReload: 'โหลดใหม่',
     menuEdit: 'แก้ไข',
     menuWindow: 'หน้าต่าง',
@@ -536,7 +542,8 @@ const tMain = createI18n({
     menuSaveAs: 'Simpan Sebagai…',
     menuClose: 'Tutup',
     tabCrashTitle: 'Tab mengalami crash',
-    tabCrashMsg: 'Proses halaman "{title}" berhenti secara tidak terduga ({reason}). Anda dapat mencoba memuat ulang atau menutup tab.',
+    tabCrashMsg:
+      'Proses halaman "{title}" berhenti secara tidak terduga ({reason}). Anda dapat mencoba memuat ulang atau menutup tab.',
     tabCrashReload: 'Muat ulang',
     menuEdit: 'Edit',
     menuWindow: 'Jendela',
@@ -573,7 +580,8 @@ const tMain = createI18n({
     menuSaveAs: 'Сохранить как…',
     menuClose: 'Закрыть',
     tabCrashTitle: 'Вкладка аварийно завершилась',
-    tabCrashMsg: 'Процесс страницы «{title}» неожиданно завершился ({reason}). Можно перезагрузить вкладку или закрыть её.',
+    tabCrashMsg:
+      'Процесс страницы «{title}» неожиданно завершился ({reason}). Можно перезагрузить вкладку или закрыть её.',
     tabCrashReload: 'Перезагрузить',
     menuEdit: 'Правка',
     menuWindow: 'Окно',
@@ -610,7 +618,8 @@ const tMain = createI18n({
     menuSaveAs: 'حفظ باسم…',
     menuClose: 'إغلاق',
     tabCrashTitle: 'تعطل علامة التبويب',
-    tabCrashMsg: 'انتهت عملية الصفحة "{title}" بشكل غير متوقع ({reason}). يمكنك محاولة إعادة التحميل أو إغلاق علامة التبويب.',
+    tabCrashMsg:
+      'انتهت عملية الصفحة "{title}" بشكل غير متوقع ({reason}). يمكنك محاولة إعادة التحميل أو إغلاق علامة التبويب.',
     tabCrashReload: 'إعادة تحميل',
     menuEdit: 'تحرير',
     menuWindow: 'نافذة',
@@ -647,7 +656,8 @@ const tMain = createI18n({
     menuSaveAs: 'Salvar Como…',
     menuClose: 'Fechar',
     tabCrashTitle: 'Aba travou',
-    tabCrashMsg: 'O processo da página "{title}" terminou inesperadamente ({reason}). Você pode tentar recarregar ou fechar a aba.',
+    tabCrashMsg:
+      'O processo da página "{title}" terminou inesperadamente ({reason}). Você pode tentar recarregar ou fechar a aba.',
     tabCrashReload: 'Recarregar',
     menuEdit: 'Editar',
     menuWindow: 'Janela',
@@ -684,7 +694,8 @@ const tMain = createI18n({
     menuSaveAs: 'Salva con nome…',
     menuClose: 'Chiudi',
     tabCrashTitle: 'Scheda bloccata',
-    tabCrashMsg: 'Il processo della pagina "{title}" si è interrotto in modo imprevisto ({reason}). Puoi provare a ricaricare o chiudere la scheda.',
+    tabCrashMsg:
+      'Il processo della pagina "{title}" si è interrotto in modo imprevisto ({reason}). Puoi provare a ricaricare o chiudere la scheda.',
     tabCrashReload: 'Ricarica',
     menuEdit: 'Modifica',
     menuWindow: 'Finestra',
@@ -721,7 +732,8 @@ const tMain = createI18n({
     menuSaveAs: 'Zapisz jako…',
     menuClose: 'Zamknij',
     tabCrashTitle: 'Karta uległa awarii',
-    tabCrashMsg: 'Proces strony „{title}” zakończył się nieoczekiwanie ({reason}). Można ponownie załadować kartę lub ją zamknąć.',
+    tabCrashMsg:
+      'Proces strony „{title}” zakończył się nieoczekiwanie ({reason}). Można ponownie załadować kartę lub ją zamknąć.',
     tabCrashReload: 'Załaduj ponownie',
     menuEdit: 'Edycja',
     menuWindow: 'Okno',
@@ -758,7 +770,8 @@ const tMain = createI18n({
     menuSaveAs: 'Opslaan als…',
     menuClose: 'Sluiten',
     tabCrashTitle: 'Tabblad gecrasht',
-    tabCrashMsg: 'Het paginaproces van "{title}" is onverwacht beëindigd ({reason}). U kunt proberen het tabblad opnieuw te laden of te sluiten.',
+    tabCrashMsg:
+      'Het paginaproces van "{title}" is onverwacht beëindigd ({reason}). U kunt proberen het tabblad opnieuw te laden of te sluiten.',
     tabCrashReload: 'Opnieuw laden',
     menuEdit: 'Bewerken',
     menuWindow: 'Venster',
@@ -795,7 +808,8 @@ const tMain = createI18n({
     menuSaveAs: 'Simpan Sebagai…',
     menuClose: 'Tutup',
     tabCrashTitle: 'Tab telah rosak',
-    tabCrashMsg: 'Proses halaman "{title}" telah ditamatkan secara tiba-tiba ({reason}). Anda boleh cuba memuat semula atau menutup tab.',
+    tabCrashMsg:
+      'Proses halaman "{title}" telah ditamatkan secara tiba-tiba ({reason}). Anda boleh cuba memuat semula atau menutup tab.',
     tabCrashReload: 'Muat semula',
     menuEdit: 'Edit',
     menuWindow: 'Tetingkap',
@@ -832,7 +846,8 @@ const tMain = createI18n({
     menuSaveAs: 'שמירה בשם…',
     menuClose: 'סגירה',
     tabCrashTitle: 'הכרטיסייה קרסה',
-    tabCrashMsg: 'תהליך העמוד של "{title}" הסתיים באופן בלתי צפוי ({reason}). ניתן לנסות לטעון מחדש או לסגור את הכרטיסייה.',
+    tabCrashMsg:
+      'תהליך העמוד של "{title}" הסתיים באופן בלתי צפוי ({reason}). ניתן לנסות לטעון מחדש או לסגור את הכרטיסייה.',
     tabCrashReload: 'טען מחדש',
     menuEdit: 'עריכה',
     menuWindow: 'חלון',
@@ -869,7 +884,8 @@ const tMain = createI18n({
     menuSaveAs: 'इस रूप में सहेजें…',
     menuClose: 'बंद करें',
     tabCrashTitle: 'टैब क्रैश हो गया',
-    tabCrashMsg: '"{title}" पेज प्रक्रिया अचानक बंद हो गई ({reason})। आप फिर से लोड करने या टैब बंद करने का प्रयास कर सकते हैं।',
+    tabCrashMsg:
+      '"{title}" पेज प्रक्रिया अचानक बंद हो गई ({reason})। आप फिर से लोड करने या टैब बंद करने का प्रयास कर सकते हैं।',
     tabCrashReload: 'फिर से लोड करें',
     menuEdit: 'संपादन',
     menuWindow: 'विंडो',
@@ -1754,8 +1770,6 @@ function installDockMenu(): void {
 // Prefer proxy env vars (terminal launch); a packaged app launched from Finder inherits no shell
 // env vars, so the renderer uses Chromium's system proxy and is unaffected. Same bootstrap as
 // slides-main startSlidesStandalone.
-let proxyBootstrap: Promise<void> = Promise.resolve()
-
 async function installMainProcessProxy(): Promise<void> {
   const proxyUrl = [
     process.env.HTTPS_PROXY,
@@ -1845,7 +1859,7 @@ app.whenReady().then(() => {
     return
   }
 
-  proxyBootstrap = installMainProcessProxy()
+  void installMainProcessProxy()
   app.setAccessibilitySupportEnabled(true)
   // Settle the shared uiLang from saved settings BEFORE any tab renderer can
   // ask 'app:get-language': the editor handlers return the i18n module's

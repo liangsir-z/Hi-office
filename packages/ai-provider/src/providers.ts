@@ -1,5 +1,21 @@
 import type { AiProviderId, AiProviderMeta, AiSettings, LegacyAiSettings } from './types'
 
+const DEFAULT_DEEPSEEK_MODEL = 'deepseek-flash'
+
+// The legacy aliases are retired or routed to the current Flash model.
+// Do not silently upgrade former Reasoner users to the higher-priced Pro model.
+export function normalizeDeepSeekModel(model: string): string {
+  switch (model) {
+    case 'deepseek-chat':
+    case 'deepseek-reasoner':
+    case 'deepseek-v4-flash':
+    case 'deepseek-v4-flash-vision-exp':
+      return DEFAULT_DEEPSEEK_MODEL
+    default:
+      return model
+  }
+}
+
 /**
  * DeepSeek is the single supported provider in this build: the deployment
  * locks the whole team to one vendor, so the lineup, wire routing, and
@@ -10,11 +26,10 @@ export const AI_PROVIDERS: AiProviderMeta[] = [
   {
     id: 'deepseek',
     label: 'DeepSeek',
-    // deepseek-chat / deepseek-reasoner are text-only: their API rejects the
-    // OpenAI image_url content part with HTTP 400
+    // Keep requests text-only until model-specific image support is wired.
     vision: false,
-    models: ['deepseek-chat', 'deepseek-reasoner'],
-    defaultModel: 'deepseek-chat',
+    models: [DEFAULT_DEEPSEEK_MODEL, 'deepseek-v4-pro'],
+    defaultModel: DEFAULT_DEEPSEEK_MODEL,
     keyPlaceholder: 'sk-...',
   },
 ]
@@ -26,8 +41,8 @@ export const PROVIDER_BASE_URLS: Record<'deepseek', string> = {
 
 /**
  * Whether a request to `provider` with model `model` may carry inline image
- * attachments. DeepSeek is text-only, so this is always false; the signature
- * stays (provider, model) so call sites don't churn when the lineup grows.
+ * attachments. This build keeps both DeepSeek choices on its text-only path;
+ * the signature can accommodate model-specific image support later.
  */
 export function providerSupportsVision(provider: AiProviderId, _model?: string): boolean {
   return AI_PROVIDERS.find((meta) => meta.id === provider)?.vision !== false
@@ -39,7 +54,7 @@ export function providerSupportsVision(provider: AiProviderId, _model?: string):
  * hardcoded keys.
  */
 export function defaultAiSettings(defaultApiKey?: string): AiSettings {
-  const providers = { deepseek: { apiKey: defaultApiKey ?? '', model: 'deepseek-chat' } }
+  const providers = { deepseek: { apiKey: defaultApiKey ?? '', model: DEFAULT_DEEPSEEK_MODEL } }
   return { provider: 'deepseek', providers }
 }
 
@@ -60,8 +75,15 @@ export function resolveAiSettings(
     provider: 'deepseek',
     providers: {
       deepseek: {
-        apiKey: typeof deepseek?.apiKey === 'string' ? deepseek.apiKey : defaults.providers.deepseek.apiKey,
-        model: typeof deepseek?.model === 'string' && deepseek.model ? deepseek.model : defaults.providers.deepseek.model,
+        apiKey:
+          typeof deepseek?.apiKey === 'string'
+            ? deepseek.apiKey
+            : defaults.providers.deepseek.apiKey,
+        model: normalizeDeepSeekModel(
+          typeof deepseek?.model === 'string' && deepseek.model
+            ? deepseek.model
+            : defaults.providers.deepseek.model,
+        ),
       },
     },
   }

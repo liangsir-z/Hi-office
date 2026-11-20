@@ -10,36 +10,52 @@ describe('chatForProvider (deepseek)', () => {
   it('extracts the message content from the response', async () => {
     vi.stubGlobal(
       'fetch',
-      vi.fn().mockResolvedValue(jsonResponse({ choices: [{ message: { content: 'hello world' } }] })),
+      vi
+        .fn()
+        .mockResolvedValue(jsonResponse({ choices: [{ message: { content: 'hello world' } }] })),
     )
     const result = await chatForProvider(
       'deepseek',
-      { apiKey: 'k', model: 'deepseek-chat' },
+      { apiKey: 'k', model: 'deepseek-flash' },
       'sys',
       'hi',
     )
     expect(result).toEqual({ ok: true, content: 'hello world' })
   })
 
-  it('hits the fixed deepseek endpoint', async () => {
+  it.each([
+    ['deepseek-v4-pro', 'deepseek-v4-pro'],
+    ['deepseek-reasoner', 'deepseek-flash'],
+  ])('sends configured %s as %s with thinking disabled', async (model, wireModel) => {
     const fetchMock = vi
-      .fn()
+      .fn<typeof fetch>()
       .mockImplementation(() =>
         Promise.resolve(jsonResponse({ choices: [{ message: { content: 'ok' } }] })),
       )
     vi.stubGlobal('fetch', fetchMock)
-    await chatForProvider('deepseek', { apiKey: 'k', model: 'deepseek-chat' }, 'sys', 'hi')
+    await chatForProvider('deepseek', { apiKey: 'fixture-key', model }, 'sys', 'hi')
     expect(fetchMock).toHaveBeenCalledWith(
       'https://api.deepseek.com/v1/chat/completions',
-      expect.anything(),
+      expect.objectContaining({
+        method: 'POST',
+        headers: expect.objectContaining({ Authorization: 'Bearer fixture-key' }),
+      }),
     )
+    expect(JSON.parse(String(fetchMock.mock.calls[0]![1]?.body))).toMatchObject({
+      model: wireModel,
+      thinking: { type: 'disabled' },
+      messages: [
+        { role: 'system', content: 'sys' },
+        { role: 'user', content: 'hi' },
+      ],
+    })
   })
 
   it('surfaces HTTP errors', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(errorResponse(401, 'bad key')))
     const result = await chatForProvider(
       'deepseek',
-      { apiKey: 'k', model: 'deepseek-chat' },
+      { apiKey: 'k', model: 'deepseek-flash' },
       'sys',
       'hi',
     )
@@ -53,7 +69,7 @@ describe('chatForProvider (deepseek)', () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(errorResponse(403, html)))
     const result = await chatForProvider(
       'deepseek',
-      { apiKey: 'k', model: 'deepseek-chat' },
+      { apiKey: 'k', model: 'deepseek-flash' },
       'sys',
       'hi',
     )
@@ -67,7 +83,7 @@ describe('chatForProvider (deepseek)', () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse({ choices: [{ message: {} }] })))
     const result = await chatForProvider(
       'deepseek',
-      { apiKey: 'k', model: 'deepseek-chat' },
+      { apiKey: 'k', model: 'deepseek-flash' },
       'sys',
       'hi',
     )
