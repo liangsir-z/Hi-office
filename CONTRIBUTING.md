@@ -97,8 +97,8 @@ testing and local overrides:
 | `XLSX_SIDECAR_PATH`, `XLSX_OPEN_PATH`, `XLSX_DEBUG_PORT` | Point at a locally built xlsx sidecar and its debug port               |
 | `*_DEV_PORT`, `*_RENDERER_URL`                           | Per-app Vite dev server ports and renderer URLs (set by `npm run dev`) |
 
-AI features degrade rather than break without credentials: requests surface an
-inline sign-in prompt, and web search falls back to a keyless backend.
+No account is required. Document editing works without credentials. To use
+AI features, enter your DeepSeek API key in the app’s settings.
 
 ## Coding conventions
 
